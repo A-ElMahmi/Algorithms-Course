@@ -13,6 +13,7 @@ class WeightedQuickUnion:
 
   def findRoot(self, i):
     while i != self.nodes[i]:
+      self.nodes[i] = self.nodes[self.nodes[i]] 
       i = self.nodes[i]
     return i
   
@@ -31,7 +32,7 @@ class WeightedQuickUnion:
     return self.findRoot(p) == self.findRoot(q)
       
 
-with open("tinyUF.txt", "r") as f:
+with open("mediumUF.txt", "r") as f:
   data = f.read().split("\n")
   links = [tuple(i.split(" ")) for i in data[1:-1]]
   
