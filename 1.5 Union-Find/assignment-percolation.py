@@ -1,4 +1,4 @@
-import random
+import random, copy
 
 class Percolation:
 
@@ -17,11 +17,13 @@ class Percolation:
   def __str__(self):
     return "\n".join([" ".join(["0" if col == 0 else "1" for col in row]) for row in self.nodes])
 
-  def run(self):
-    while self.percolates():
+  def __call__(self):
+    for i in range(9):
+      if not self.percolates():
+        break
       print("\n", repr(self), sep="")
       while True:
-        randX, randY = random.randint(0, 3), random.randint(0, 3)
+        randX, randY = random.randint(0, len(self.nodes)-1), random.randint(0, len(self.nodes)-1)
         if not self.isOpen(randX, randY):
           break
       self.open(randX, randY)
@@ -38,7 +40,7 @@ class Percolation:
       self.nodeSize[q[0]][q[1]] += self.nodeSize[p[0]][p[1]]
 
   def connected(self, grid, p, q):
-    return self.findRoot(self.nodes, *p) == self.findRoot(self.nodes, *q)
+    return self.findRoot(grid, *p) == self.findRoot(grid, *q)
   
   def findRoot(self, grid, row, col):
     if grid[row][col] == 0:
@@ -81,17 +83,18 @@ class Percolation:
     return sum([len(row)-row.count(0) for row in self.nodes])
 
   def percolates(self):
-    nodesCopy = self.nodes.copy()
+    nodesCopy = copy.deepcopy(self.nodes)
     firstNode, lastNode = (0, 0), (0, len(nodesCopy)-1)
     for i, _ in enumerate(nodesCopy[0]):
       nodesCopy[0][i] = firstNode
     for i, _ in enumerate(nodesCopy[-1]):
       nodesCopy[-1][i] = lastNode
-
+    print("\nNodes copy\n", nodesCopy)
+    
     return self.connected(nodesCopy, firstNode, lastNode)
-
+    return self.findRoot(nodesCopy, firstNode) == self.findRoot(nodesCopy, lastNode)
 
 
 if __name__ == "__main__":
-  p = Percolation(4)
-  p.run()
+  p = Percolation(3)
+  p()
