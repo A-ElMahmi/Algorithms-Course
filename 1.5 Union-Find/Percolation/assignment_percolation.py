@@ -1,5 +1,6 @@
 import random, copy
 
+
 class Percolation:
 
   nodes = []
@@ -17,15 +18,16 @@ class Percolation:
   def __str__(self):
     return "\n".join([" ".join(["0" if col == 0 else "1" for col in row]) for row in self.nodes])
 
-  def __call__(self):
+  def __call__(self, printInConsole=False):
     while not self.percolates():
-      print("\n", str(self), sep="")
+      if printInConsole: print("\n", str(self), sep="")
       while True:
         randX, randY = random.randint(0, len(self.nodes)-1), random.randint(0, len(self.nodes)-1)
         if not self.isOpen(randX, randY):
           break
       self.open(randX, randY)
-    print("\n", str(self), sep="")
+      yield self.nodes
+    if printInConsole: print("\n", str(self), sep="")
 
   def union(self, grid, p, q):
     if self.connected(grid, p, q): return
@@ -88,4 +90,5 @@ class Percolation:
 
 if __name__ == "__main__":
   p = Percolation(5)
-  p()
+  for i in p(printInConsole=True):
+    pass
