@@ -18,25 +18,24 @@ class Percolation:
     return "\n".join([" ".join(["0" if col == 0 else "1" for col in row]) for row in self.nodes])
 
   def __call__(self):
-    for i in range(9):
-      if not self.percolates():
-        break
-      print("\n", repr(self), sep="")
+    while not self.percolates():
+      print("\n", str(self), sep="")
       while True:
         randX, randY = random.randint(0, len(self.nodes)-1), random.randint(0, len(self.nodes)-1)
         if not self.isOpen(randX, randY):
           break
       self.open(randX, randY)
+    print("\n", str(self), sep="")
 
-  def union(self, p, q):
-    if self.connected(self.nodes, p, q): return
+  def union(self, grid, p, q):
+    if self.connected(grid, p, q): return
 
-    p, q = self.findRoot(self.nodes, *p), self.findRoot(self.nodes, *q)
+    p, q = self.findRoot(grid, *p), self.findRoot(grid, *q)
     if self.nodeSize[p[0]][p[1]] > self.nodeSize[q[0]][q[1]]:
-      self.nodes[q[0]][q[1]] = p
+      grid[q[0]][q[1]] = p
       self.nodeSize[p[0]][p[1]] += self.nodeSize[q[0]][q[1]]
     else:
-      self.nodes[p[0]][p[1]] = q
+      grid[p[0]][p[1]] = q
       self.nodeSize[q[0]][q[1]] += self.nodeSize[p[0]][p[1]]
 
   def connected(self, grid, p, q):
@@ -45,7 +44,7 @@ class Percolation:
   def findRoot(self, grid, row, col):
     if grid[row][col] == 0:
       return
-      
+     
     while (row, col) != grid[row][col]:
       grid[row][col] = grid[grid[row][col][0]][grid[row][col][1]]
       row, col = grid[row][col]
@@ -55,27 +54,17 @@ class Percolation:
     if self.isOpen(row, col):
       return
 
-    noOpenSites = True
+    self.nodes[row][col] = (row, col)
     if row > 0 and self.nodes[row-1][col] != 0:
-        self.nodes[row][col] = (row, col)
-        self.union((row-1, col), (row, col))
-        noOpenSites = False
+        self.union(self.nodes, (row-1, col), (row, col))
     if row < len(self.nodes)-1 and self.nodes[row+1][col] != 0:
-        self.nodes[row][col] = (row, col)
-        self.union((row+1, col), (row, col))
-        noOpenSites = False
+        self.union(self.nodes, (row+1, col), (row, col))
     if col > 0 and self.nodes[row][col-1] != 0:
-        self.nodes[row][col] = (row, col)
-        self.union((row, col-1), (row, col))
-        noOpenSites = False
+        self.union(self.nodes, (row, col-1), (row, col))
     if col < len(self.nodes)-1 and self.nodes[row][col+1] != 0:
-        self.nodes[row][col] = (row, col)
-        self.union((row, col+1), (row, col))
-        noOpenSites = False
+        self.union(self.nodes, (row, col+1), (row, col))
     
-    if noOpenSites:
-      self.nodes[row][col] = (row, col)
-
+    
   def isOpen(self, row, col):
     return self.nodes[row][col] != 0
 
@@ -84,17 +73,19 @@ class Percolation:
 
   def percolates(self):
     nodesCopy = copy.deepcopy(self.nodes)
-    firstNode, lastNode = (0, 0), (0, len(nodesCopy)-1)
-    for i, _ in enumerate(nodesCopy[0]):
-      nodesCopy[0][i] = firstNode
-    for i, _ in enumerate(nodesCopy[-1]):
-      nodesCopy[-1][i] = lastNode
-    print("\nNodes copy\n", nodesCopy)
+    for row in (0, len(nodesCopy)-1):
+      for col, val in enumerate(nodesCopy[row]):
+        if val == 0:
+          nodesCopy[row][col] = (row, col)
     
-    return self.connected(nodesCopy, firstNode, lastNode)
-    return self.findRoot(nodesCopy, firstNode) == self.findRoot(nodesCopy, lastNode)
+    for row in (0, len(nodesCopy)-1):
+      for col, _ in enumerate(nodesCopy[row][:-1]):
+        self.union(nodesCopy, (row, col), (row, col+1))
+
+    return self.connected(nodesCopy, (0, 0), (len(nodesCopy)-1, 0))
+      
 
 
 if __name__ == "__main__":
-  p = Percolation(3)
+  p = Percolation(5)
   p()
